@@ -61,9 +61,40 @@ const generateContentDiff = (oldContent, newContent) => {
   return `Content length changed from ${oldLen} to ${newLen} characters. (${sign}${diff})`;
 };
 
+/**
+ * Safely normalizes the author schema.
+ * Supports Lazy On-Read Migrations by transforming old string authors into objects on the fly.
+ * @param {any} author - The raw author field from the DB.
+ * @returns {object} The normalized author object.
+ */
+const normalizeAuthorSchema = (author) => {
+  // Defensive validation against empty or malformed inputs
+  if (!author) {
+    return { id: null, name: 'Unknown', email: null };
+  }
+
+  // If it's already an object (new schema), return it safely
+  if (typeof author === 'object' && !Array.isArray(author)) {
+    return author;
+  }
+
+  // If it's the old schema (string), transform it dynamically
+  if (typeof author === 'string') {
+    return {
+      id: null,
+      name: author.trim() || 'Unknown',
+      email: null
+    };
+  }
+
+  // Fallback for completely unexpected types
+  return { id: null, name: 'Unknown', email: null };
+};
+
 module.exports = {
   generateUniqueSlug,
   calculateWordCount,
   sanitizeTags,
-  generateContentDiff
+  generateContentDiff,
+  normalizeAuthorSchema
 };

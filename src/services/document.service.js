@@ -1,6 +1,6 @@
 const Document = require('../models/Document');
 const logger = require('../utils/logger');
-const { generateUniqueSlug, calculateWordCount, generateContentDiff } = require('../utils/document.utils');
+const { generateUniqueSlug, calculateWordCount, generateContentDiff, normalizeAuthorSchema } = require('../utils/document.utils');
 
 /**
  * Service to handle document-related business logic.
@@ -69,8 +69,26 @@ const getDocumentBySlug = async (slug) => {
   
   if (!document) return null;
 
-  // Placeholder for future lazy migration logic
-  // e.g., if (typeof document.metadata.author === 'string') { migrateAuthorFormat(document) }
+  /**
+   * LAZY ON-READ MIGRATION
+   * 
+   * What it is: We dynamically transform the legacy data into the new schema structure 
+   * strictly in memory right before returning it to the client.
+   * 
+   * Why it prevents downtime: Instead of locking the database to rewrite millions of 
+   * records synchronously (which causes API timeouts), we allow the frontend to instantly 
+   * receive the new shape. The actual DB write happens slowly in the background via our 
+   * migration script.
+   * 
+   * Why backward compatibility matters: Clients/Frontends usually expect a consistent API contract.
+   * If the API suddenly returns a string instead of an object, it breaks the UI.
+   * 
+   * Notice: We do NOT update the database here. It remains unchanged. We just mutate the 
+   * in-memory object (which is safe because we used .lean()).
+   */
+  if (document.metadata && document.metadata.author) {
+    document.metadata.author = normalizeAuthorSchema(document.metadata.author);
+  }
 
   return document;
 };
