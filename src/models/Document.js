@@ -65,7 +65,11 @@ const documentSchema = new mongoose.Schema({
 documentSchema.index({ slug: 1 }, { unique: true });
 
 // Text index on title and content for future search APIs
-documentSchema.index({ title: 'text', content: 'text' });
+// Using weighted indexes improves ranking. Matches in 'title' are scored 5x higher than 'content'.
+documentSchema.index(
+  { title: 'text', content: 'text' },
+  { weights: { title: 5, content: 1 } }
+);
 
 const Document = mongoose.model('Document', documentSchema);
 
