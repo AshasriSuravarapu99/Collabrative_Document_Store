@@ -47,8 +47,23 @@ const sanitizeTags = (tags) => {
   return [...new Set(tags.map(t => t.trim().toLowerCase()).filter(t => t.length > 0))];
 };
 
+/**
+ * Generates a simple diff summary between old and new content.
+ * @param {string} oldContent - The original text.
+ * @param {string} newContent - The updated text.
+ * @returns {string} A summary of the changes.
+ */
+const generateContentDiff = (oldContent, newContent) => {
+  const oldLen = (oldContent || '').length;
+  const newLen = (newContent || '').length;
+  const diff = newLen - oldLen;
+  const sign = diff >= 0 ? '+' : '';
+  return `Content length changed from ${oldLen} to ${newLen} characters. (${sign}${diff})`;
+};
+
 module.exports = {
   generateUniqueSlug,
   calculateWordCount,
-  sanitizeTags
+  sanitizeTags,
+  generateContentDiff
 };
