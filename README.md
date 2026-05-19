@@ -84,7 +84,7 @@ Runs independently to migrate legacy schema documents safely in batches using Mo
 
 ## Optimistic Concurrency Control (OCC)
 
-Prevents concurrent users from overwriting each other's changes.
+Prevents concurrent users from overwriting each other's changes
 
 ### How OCC Works
 
